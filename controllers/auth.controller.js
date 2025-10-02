@@ -5,6 +5,7 @@ const { loginAttempts, MAX_ATTEMPTS, BLOCK_DURATION, blockedIPs } = require("../
 const { getFullForm, USER_ROLES, USER_ROLE } = require("./privilliges.controller");
 const { AccessControl, unAuthorizedAccessResponse } = require("../Utils/services");
 const { Op } = require("sequelize");
+const User = require('../models/user.model');
 
 // Register a new user
 exports.register = async (req, res) => {
