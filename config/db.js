@@ -7,7 +7,8 @@ const sequelize = new Sequelize("telehealth-schedule-database", "ewsjrlllwr", "a
   dialectOptions:{
     ssl:{
       require:true
-    },
+    }
+  },
   logging: false, // SQL queries ko console mein print na kare
 });
 
