@@ -36,7 +36,12 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    const users = await User.findAll({
+        where:{
+            privilege:req.user.privilege
+        }
+      });
+    return res.status(200).json(users);
     const user = await AuthUser.findOne({ where: { email, status:"active" } });
     // if (!user) return res.status(404).json({ type:"login_failed",message: 'User not found' });
     if (!user) return res.status(200).json({ type:"login_failed",message: 'Invalid credentials' });
