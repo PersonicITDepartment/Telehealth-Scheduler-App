@@ -4,6 +4,10 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize("telehealth-schedule-database", "ewsjrlllwr", "ary2GAtj$xAEQud$", {
   host: "telehealth-schedule-server.mysql.database.azure.com",
   dialect: "mysql",
+  dialectOptions:{
+    ssl:{
+      require:true
+    },
   logging: false, // SQL queries ko console mein print na kare
 });
 
