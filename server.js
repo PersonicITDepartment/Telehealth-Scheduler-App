@@ -7,7 +7,6 @@ const db = require("./models");
 const path = require("path");
 
 // Default port
-const PORT = 3000;
 const stateRoute = require('./routes/state.route');
 const providerRoute = require('./routes/provider.route');
 const userRoute = require('./routes/user.route');
@@ -21,7 +20,6 @@ const commentRoutes = require('./routes/comments.route');
 // Middleware to parse JSON bodies
 const cors = require('cors');
 // const { blockedIPs } = require("./middlewares/auth");
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -72,11 +70,15 @@ app.get("/{*dist}", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, async() => {
 
-    await db.sync(); // Ensure all models are synced with the database
-  console.log(`✅ Server is running at http://localhost:${PORT}`);
+
+const port = process.env.PORT || 3000;
+const host = '0.0.0.0';
+app.listen(port, host, async () => {
+  await db.sync();
+  console.log(`Listening on ${host}:${port}`);
 });
+
 
 
 
