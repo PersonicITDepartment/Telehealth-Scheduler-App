@@ -24,9 +24,11 @@ exports.createAvailability = async (req, res) => {
 
   try {
 
-    const startTime = toTimestamp(startFrom)
-    const endTime = toTimestamp(endFrom)
+    const startTime = toTimestamp(dayjs(startFrom).format("YYYY-MM-DD HH:mm:ss"))  
+    const endTime = toTimestamp(dayjs(endFrom).format("YYYY-MM-DD HH:mm:ss"))
 
+
+    
     if ([USER_ROLE.DSS, USER_ROLE.SUPER_ADMIN, USER_ROLE.PCM].includes(req.user.privilege)) {
       // AccessControl.allUsers(req.user, res, ['CDS', 'PCC', "DSS", "PCM", 'superadmin']);
       // Check overlapping slots for same provider/state
@@ -65,9 +67,10 @@ exports.checkAvailabilityConflict = async (req, res) => {
     const { providerId, date, startTime: startFrom, endTime: endWith } = req.body;
 
 
-    const startTime = toTimestamp(startFrom)
-    const endTime = toTimestamp(endWith)
-
+   
+    const startTime = toTimestamp(dayjs(startFrom).format("YYYY-MM-DD HH:mm:ss"))  
+    const endTime = toTimestamp(dayjs(endWith).format("YYYY-MM-DD HH:mm:ss"))
+    
     // Conflict check (time overlapping logic)
     const conflict = await Availability.findOne({
       where: {
@@ -125,6 +128,217 @@ function convertTimeZone(dateTime, from, to) {
 
 }
 
+// exports.getAvailability = async (req, res) => {
+//   try {
+//     AccessControl.allUsers(req.user, res, ['CDS', 'PCC', "DSS", "PCM", 'superadmin']);
+
+
+
+//     const providers = await Provider.findAll({
+//       attributes: ['id', 'suffix', 'firstName', 'stateLicenses', 'lastName', 'specialty'],
+//       include: [
+//         {
+//           model: Availability,
+//           required: true, // only providers with at least 1 availability
+//           attributes: ['id', 'startTime', 'endTime', 'status','timezone'],
+//           include: [
+//             { model: State, attributes: ["id", 'stateName'] },
+//             {
+//               model: User,
+//               as: "confirmedUser",
+//               attributes: [
+//                 'id',
+//                 "firstName",
+//                 "lastName",
+//                 'email'
+//               ]
+//             },
+//             {
+//               model: User,
+//               as: "reservedUser",
+//               attributes: [
+//                 'id',
+//                 "firstName",
+//                 "lastName",
+//                 'email'
+//               ]
+//             }
+//           ]
+//         }
+//       ]
+//     });
+
+
+
+
+//     const response = await Promise.all(
+//   providers.map(async (provider) => {
+//     const states = await State.findAll({
+//       where: { stateCode: provider.stateLicenses }, // Sequelize will match array of codes
+//       attributes: ["stateCode", "stateName", "id"],
+//     });
+
+
+
+//     return {
+//       id: provider.id,
+//       name: `${provider.suffix} ${provider.firstName} ${provider.lastName}`,
+//       specialty: provider.specialty,
+//       // states ko agar chahe direct bhej sakte ho:
+//       stateLicenses: [...new Set(states)],
+//       schedule: provider.Availabilities.map((slot) => {
+//         const start = new Date(slot.startTime);
+//         const end = new Date(slot.endTime);
+
+
+//         return {
+//           id: slot.id,
+//           date: start.toISOString().split("T")[0],
+//           time: `${start.toLocaleTimeString([], { 
+//             hour: "2-digit", 
+//             minute: "2-digit", 
+//             hour12: true 
+//           })} - ${end.toLocaleTimeString([], { 
+//             hour: "2-digit", 
+//             minute: "2-digit", 
+//             hour12: true,
+//           })}`,
+//           duration: Math.floor((end - start) / (1000 * 60)),
+//           status: slot.status,
+//           state: slot.State?.stateName || null,   // safe access
+//           reservedUser: slot.reservedUser || null,
+//           confirmedUser: slot.confirmedUser || null,
+//           timezone:slot.timezone
+//         };
+//       }),
+//     };
+//   })
+// );
+
+
+
+//     res.json(response);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: error.message || "Internal Server Error" });
+//   }
+// };
+
+
+
+// exports.getAvailability = async (req, res) => {
+//   try {
+//     AccessControl.allUsers(req.user, res, ['CDS', 'PCC', "DSS", "PCM", 'superadmin']);
+
+//     // request se date range lena
+//     const { startingTime, endTime } = req.query;
+
+//     let availabilityWhere = {};
+
+//     if (startingTime && endTime) {
+//       // agar query me date di ho
+//       availabilityWhere.startTime = {
+//         [Op.between]: [new Date(startingTime), new Date(endTime)]
+//       };
+//     } else {
+//       // agar query me na ho to default current date
+//       const today = new Date();
+//       const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+//       const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+//       // ek nayi Date instance banao warna reference change ho jata hai
+//       const oneWeekLater = new Date();
+//       oneWeekLater.setDate(oneWeekLater.getDate() + 7);       
+//       const endOfWeek = new Date(oneWeekLater.setHours(23, 59, 59, 999));
+
+//       availabilityWhere.startTime = {
+//         [Op.between]: [startOfDay, endOfWeek]
+//       };
+//     }
+
+//     const providers = await Provider.findAll({
+//       attributes: ['id', 'suffix', 'firstName', 'stateLicenses', 'lastName', 'specialty'],
+//       include: [
+//         {
+//           model: Availability,
+//           required: true,
+//           attributes: ['id', 'startTime', 'endTime', 'status', 'timezone'],
+//           where: availabilityWhere, // filter apply
+//           include: [
+//             { model: State, attributes: ["id", 'stateName'] },
+//             {
+//               model: User,
+//               as: "confirmedUser",
+//               attributes: ['id', "firstName", "lastName", 'email']
+//             },
+//             {
+//               model: User,
+//               as: "reservedUser",
+//               attributes: ['id', "firstName", "lastName", 'email']
+//             },
+//             {model:Reservation,
+//                 as: "reservations",
+//               include:[{
+//                 model:User,
+//                 as:"reservedUser"
+//               },
+//                { model:User,
+//                 as:"confirmedUser"
+//               }
+//             ]
+//             }
+//           ]
+//         }
+//       ]
+//     });
+
+
+//     const response = await Promise.all(
+//       providers.map(async (provider) => {
+//         const states = await State.findAll({
+//           where: { stateCode: provider.stateLicenses },
+//           attributes: ["stateCode", "stateName", "id"],
+//         });
+
+//         return {
+//           id: provider.id,
+//           name: `${provider.suffix} ${provider.firstName} ${provider.lastName}`,
+//           specialty: provider.specialty,
+//           stateLicenses: [...new Set(states)],
+//           schedule: provider.Availabilities.map((slot) => {
+//             const start = new Date(slot.startTime);
+//             const end = new Date(slot.endTime);
+
+//             return {
+//               id: slot.id,
+//               date: start.toISOString().split("T")[0],
+//               time: `${start.toLocaleTimeString([], {
+//                 hour: "2-digit",
+//                 minute: "2-digit",
+//                 hour12: true
+//               })} - ${end.toLocaleTimeString([], {
+//                 hour: "2-digit",
+//                 minute: "2-digit",
+//                 hour12: true,
+//               })}`,
+//               duration: Math.floor((end - start) / (1000 * 60)),
+//               status: slot.status,
+//               state: slot.State?.stateName || null,
+//               reservedUser: slot.reservedUser || null,
+//               confirmedUser: slot.confirmedUser || null,
+//               timezone: slot.timezone
+//             };
+//           }),
+//         };
+//       })
+//     );
+
+//     res.json(response);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: error.message || "Internal Server Error" });
+//   }
+// };
 
 exports.getAvailability = async (req, res) => {
   try {
@@ -450,6 +664,62 @@ exports.getAvailabilityByUser = async (req, res) => {
     };
 
 
+    // const response = {
+    //   id: provider.id,
+    //   name: `${provider.suffix} ${provider.firstName} ${provider.lastName}`,
+    //   specialty: provider.specialty,
+    //   stateLicenses: [...new Set(states)],
+    //   schedule: provider.Availabilities.map((slot) => {
+    //     const start = new Date(slot.startTime);
+    //     const end = new Date(slot.endTime);
+
+    //     const totalDuration = Math.floor((end - start) / (1000 * 60));
+
+    //     // ✅ Reservation duration sum
+    //     const reservationDuration = slot.reservations?.reduce((sum, r) => {
+    //       if (r.isCancelled === "no") {
+    //         return sum + (r.duration || 0);
+    //       }
+    //       return sum;
+    //     }, 0) || 0;
+
+    //     const availableDuration = totalDuration - reservationDuration;
+
+    //     return {
+    //       id: slot.id,
+    //       date: start.toISOString().split("T")[0],
+    //       time: `${start.toLocaleTimeString([], {
+    //         hour: "2-digit",
+    //         minute: "2-digit",
+    //         hour12: true
+    //       })} - ${end.toLocaleTimeString([], {
+    //         hour: "2-digit",
+    //         minute: "2-digit",
+    //         hour12: true,
+    //       })}`,
+    //       duration: totalDuration,
+    //       availableDuration, // ✅ new field
+    //       status: slot.status,
+    //       state: slot.State?.stateName || null,
+    //       reservedUser: slot.reservedUser || null,
+    //       confirmedUser: slot.confirmedUser || null,
+    //       timezone: slot.timezone,
+    //       reservations: slot.reservations.sort((a, b) => new Date(a.start) - new Date(b.start))?.map(r => ({
+    //         id: r.id,
+    //         start: r.start,
+    //         end: r.end,
+    //         duration: r.duration,
+    //         status: r.status,
+    //         notes: r.notes,
+    //         isCancelled: r.isCancelled,
+    //         reasonOfCancellation: r.reasonOfCancellation,
+    //         reservedUser: r.reservedUser,
+    //         confirmedUser: r.confirmedUser,
+    //         state: r.state
+    //       })) || []
+    //     };
+    //   }),
+    // };
 
     return res.json(response);
   } catch (error) {
@@ -831,7 +1101,30 @@ function checkMainReservationOverlap(mainReservation, allReservations, slotTimez
 
   let overlap = null;
 
+  // ✅ Check with PREVIOUS reservation (same logic as first code)
+  // if (mainIndex > 0) {
+  //   const prev = sortedReservations[mainIndex - 1];
+  //   const prevEnd = dayjs(
+  //     convertTimeZoneV1(prev.end, prev.timezone, slotTimezone)
+  //   );
 
+  //   // Agar main reservation previous ke end se pehle start ho raha hai
+  //   if (mainStartInSlotTZ.isBefore(prevEnd)) {
+  //     const overlapMinutes = prevEnd.diff(mainStartInSlotTZ, "minute");
+
+  //     const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+  //     overlap = {
+  //       type: "overlaps_with_previous",
+  //       overlapWith: prev.id,
+  //       overlapWithUser: prev.reservedUser || prev.confirmedUser,
+  //       overlapTime: overlapMinutes,
+  //       message: randomMsg,
+  //       previousReservationId: prev.id,
+  //       details: `This reservation starts before previous reservation ends (${overlapMinutes} min overlap)`
+  //     };
+  //   }
+  // }
 
   // ✅ Check with NEXT reservation bhi (reverse check)
   if (!overlap && mainIndex < sortedReservations.length - 1) {

@@ -7,7 +7,8 @@ exports.getAllUsers = async (req, res) => {
   
   try {
 
-   
+    // if(!AccessControl.allUsers(req.user,res,USER_ROLES)) return res.status(401).json({error:"unaothorized access"})
+
     const {privilege:u_role} = req.user
      
     if(AccessControl.authorizeByPrivileges(["superadmin"],req.user)){ 
@@ -53,7 +54,20 @@ exports.createUser = async (req, res) => {
   }
 };
 
+// Update user by ID
+// exports.updateUser = async (req, res) => {
+//   try {
+//     const { email, firstName, lastName, privilege, status } = req.body;
+//     const user = await User.findByPk(req.params.id);
+//     if (!user) return res.status(404).json({ message: 'User not found' });
 
+//     await user.update({ email, firstName, lastName, privilege, status });
+//     res.status(200).json(user);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// };
 
 exports.updateUser = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 {
-  "name": "telehealth_scheduler",
-  "version": "10.0.1",
+  "name": "backend",
+  "version": "1.0.1",
   "description": "",
   "main": "server.js",
   "scripts": {

@@ -27,7 +27,11 @@ const Availability = sequelize.define('Availability', {
 });
 
 
-
+// Associations
+// Provider.hasMany(Availability, { foreignKey: 'providerId' });
+// State.hasMany(Availability, { foreignKey: 'stateId' });
+// Availability.belongsTo(Provider, { foreignKey: 'providerId' });
+// Availability.belongsTo(State, { foreignKey: 'stateId' });
 // Provider -> Availability
 Provider.hasMany(Availability, { foreignKey: 'providerId' });
 Availability.belongsTo(Provider, { foreignKey: 'providerId' });

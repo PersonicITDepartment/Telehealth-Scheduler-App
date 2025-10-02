@@ -413,3 +413,41 @@ module.exports = {
 };
 
 
+// ===== Routes: scheduleRoutes.js =====
+/*
+const express = require('express');
+const router = express.Router();
+const { exportDoctorScheduleToExcel } = require('../controllers/scheduleController');
+
+// Export schedule to Excel
+// GET /api/schedule/export?startingTime=2025-09-29&endTime=2025-10-01
+router.get('/export', exportDoctorScheduleToExcel);
+
+module.exports = router;
+*/
+
+
+// ===== Frontend Button Example (React/HTML) =====
+/*
+// HTML Button
+<button onclick="downloadSchedule()">Download Schedule Report</button>
+
+<script>
+function downloadSchedule() {
+  const startDate = '2025-09-29'; // Apni date yahan set karein
+  const endDate = '2025-10-01';
+  
+  window.location.href = `http://localhost:3000/api/schedule/export?startingTime=${startDate}&endTime=${endDate}`;
+}
+</script>
+
+// React Button
+const handleDownload = () => {
+  const startDate = '2025-09-29';
+  const endDate = '2025-10-01';
+  
+  window.open(`/api/schedule/export?startingTime=${startDate}&endTime=${endDate}`, '_blank');
+};
+
+<button onClick={handleDownload}>Download Schedule Report</button>
+*/
