@@ -5,14 +5,13 @@ const { loginAttempts, MAX_ATTEMPTS, BLOCK_DURATION, blockedIPs } = require("../
 const { getFullForm, USER_ROLES, USER_ROLE } = require("./privilliges.controller");
 const { AccessControl, unAuthorizedAccessResponse } = require("../Utils/services");
 const { Op } = require("sequelize");
-const User = require('../models/user.model');
 
 // Register a new user
 exports.register = async (req, res) => {
   try {
     const { username, email, password, privilege,firstName,lastName } = req.body;
 
-    //if(![USER_ROLE.SUPER_ADMIN].includes(req.user.privilege)) return res.status(401).json(unAuthorizedAccessResponse)
+    if(![USER_ROLE.SUPER_ADMIN].includes(req.user.privilege)) return res.status(401).json(unAuthorizedAccessResponse)
     // Check if username or email already exists
     const existingUser = await AuthUser.findOne({ 
       where: { username } 
@@ -37,8 +36,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const users = await User.findAll();
-    return res.status(200).json(users);
+   
     const user = await AuthUser.findOne({ where: { email, status:"active" } });
     // if (!user) return res.status(404).json({ type:"login_failed",message: 'User not found' });
     if (!user) return res.status(200).json({ type:"login_failed",message: 'Invalid credentials' });
