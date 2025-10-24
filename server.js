@@ -6,7 +6,7 @@ require('dotenv').config();
 const db = require("./models");
 const path = require("path");
 // Default port
-const PORT = 3000;
+const PORT = 8080;
 const stateRoute = require('./routes/state.route');
 const providerRoute = require('./routes/provider.route');
 const userRoute = require('./routes/user.route');
