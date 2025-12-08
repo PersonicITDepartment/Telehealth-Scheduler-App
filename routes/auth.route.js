@@ -9,6 +9,7 @@ const User = require('../models/user.model');
 const { getFullForm } = require('../controllers/privilliges.controller');
 const { startSSO, ssoCallback } = require('../controllers/sso.controller');
 const { setupAuthenticatorMFA, verifyAuthenticatorOTP } = require('../controllers/mfa.controller');
+// const { startSSO, mockProvider, ssoCallback } = require('../controllers/test.sso.controller');
 
 const PUBLIC_KEY_PATH = path.join(__dirname, '../keys/rsa_public.pem');
 

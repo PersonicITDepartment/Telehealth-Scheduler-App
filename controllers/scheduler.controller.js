@@ -68,13 +68,13 @@ exports.checkAvailabilityConflict = async (req, res) => {
 
     AccessControl.allUsers(req.user, res, ['CDS', 'PCC', "DSS", "PCM", 'superadmin']);
 
-    const { providerId, date, startTime: startFrom, endTime: endWith } = req.body;
+    const { providerId, date, startTime: startFrom, endTime: endWith,timezone="EST" } = req.body;
 
 
 
-    const startTime = toTimestamp(dayjs(startFrom).format("YYYY-MM-DD HH:mm:ss"))
-    const endTime = toTimestamp(dayjs(endWith).format("YYYY-MM-DD HH:mm:ss"))
-
+    const startTime = toUTC(startFrom,timezone)
+    const endTime= toUTC(endWith,timezone)
+   
     // Conflict check (time overlapping logic)
     const conflict = await Availability.findOne({
       where: {
@@ -92,7 +92,7 @@ exports.checkAvailabilityConflict = async (req, res) => {
       ]
     });
 
-
+ 
     if (conflict) {
       return res.status(200).json({
         name: "Conflict",
@@ -101,9 +101,10 @@ exports.checkAvailabilityConflict = async (req, res) => {
           provider: `${conflict.TelehealthProvider.suffix} ${conflict.TelehealthProvider.firstName} ${conflict.TelehealthProvider.lastName}`,
           state: conflict.State?.stateName,
           existingSlot: {
-            startTime: conflict.startTime,
-            endTime: conflict.endTime,
-            status: conflict.status
+            startTime: toLocalTz(conflict.startTime,conflict?.timezone),
+            endTime: toLocalTz(conflict.endTime,conflict?.timezone),
+            timezone:conflict?.timezone,
+            status: conflict?.status
           }
         }
       });

@@ -124,9 +124,9 @@ const TIMEZONES = {
   CST: "America/Chicago",
 };
 function toUTC(localDateTime, tz) {
-  return dayjs.tz(localDateTime, TIMEZONES[tz]).utc().format();
+  return dayjs.tz(localDateTime, TIMEZONES[String(tz).toUpperCase()]).utc().format();
 }
  function toLocalTz(utcDateTime, tz) {
-  return dayjs.utc(utcDateTime).tz(TIMEZONES[tz]).format("YYYY-MM-DD HH:mm:ss");
+  return dayjs.utc(utcDateTime).tz(TIMEZONES[String(tz).toUpperCase()]).format("YYYY-MM-DD HH:mm:ss");
 }
 module.exports = { AccessControl, availablePrivileges,unAuthorizedAccessResponse,maskEmail,toUTC,toLocalTz };

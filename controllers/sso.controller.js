@@ -86,7 +86,7 @@ const ssoCallback = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username, privilege: user.privilege },
       process.env.JWT_SECRET || "5e555416fe2bbb900f857d1e2edd89eb",
-      { expiresIn: "24h" }
+      { expiresIn: "8h" }
     );
 
     // Set cookies
@@ -94,7 +94,7 @@ const ssoCallback = async (req, res) => {
       httpOnly: false,
       secure: true,
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 8 * 60 * 60 * 1000,
     });
 
    res.cookie(
@@ -115,7 +115,7 @@ const ssoCallback = async (req, res) => {
       httpOnly: false,
       secure: false,
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 8 * 60 * 60 * 1000,
     }
   );
 
