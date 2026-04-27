@@ -157,6 +157,28 @@ exports.updateReservation = async (req, res) => {
      start =req.body.start?toUTC(req.body.start,timezone):reservation.start,
      end = req.body.end?toUTC(req.body.end,timezone):reservation.end
     
+
+      // Overlap check: exclude current reservation itself
+    const conflictingReservation = await Reservation.findOne({
+      where: {
+        id: { [Op.ne]: id },
+        providerId: reservation.providerId,
+        status: { [Op.ne]: "cancelled" },
+        [Op.or]: [
+          {
+            start: { [Op.lt]: end },
+            end: { [Op.gt]: start },
+          },
+        ],
+      },
+    });
+
+    if (conflictingReservation) {
+      return res.status(400).json({
+        title:"Time Slot Conflict",
+        error: "This time slot conflicts with an already reserved slot for this provider.",
+      });
+    }
     // Agar CDS, Super Admin ya allowed PCC case hai → update kar do
     const updated = await Reservation.update({...req.body,start,end}, { where: { id } });
 

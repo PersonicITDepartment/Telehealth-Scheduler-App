@@ -18,6 +18,16 @@ const toTimestamp = (dateTimeString) => {
   const utcString = dateTimeString.replace(" ", "T") + "Z";
   return new Date(utcString).toISOString();
 };
+
+const hasDatePart = (value) => {
+  if (!value || typeof value !== "string") return false;
+  return /\d{4}-\d{2}-\d{2}/.test(value);
+};
+
+const buildDateTimeForTimezone = (date, timeValue) => {
+  if (hasDatePart(timeValue)) return timeValue;
+  return `${date} ${timeValue}`;
+};
 // Create a new schedule
 exports.createAvailability = async (req, res) => {
 
@@ -25,9 +35,15 @@ exports.createAvailability = async (req, res) => {
 
   try {
 
+    const startInput = buildDateTimeForTimezone(date, startFrom);
+    const endInput = buildDateTimeForTimezone(date, endFrom);
 
-    const startTime = toUTC(startFrom, timezone)
-    const endTime = toUTC(endFrom, timezone)
+    const startTime = toUTC(startInput, timezone)
+    const endTime = toUTC(endInput, timezone)
+
+    if (!startTime || !endTime || new Date(startTime) >= new Date(endTime)) {
+      return res.status(400).json({ message: 'Invalid schedule time range' });
+    }
 
 
 
@@ -70,10 +86,15 @@ exports.checkAvailabilityConflict = async (req, res) => {
 
     const { providerId, date, startTime: startFrom, endTime: endWith,timezone="EST" } = req.body;
 
+    const startInput = buildDateTimeForTimezone(date, startFrom);
+    const endInput = buildDateTimeForTimezone(date, endWith);
 
+    const startTime = toUTC(startInput,timezone)
+    const endTime= toUTC(endInput,timezone)
 
-    const startTime = toUTC(startFrom,timezone)
-    const endTime= toUTC(endWith,timezone)
+    if (!startTime || !endTime || new Date(startTime) >= new Date(endTime)) {
+      return res.status(400).json({ message: 'Invalid schedule time range' });
+    }
    
     // Conflict check (time overlapping logic)
     const conflict = await Availability.findOne({
