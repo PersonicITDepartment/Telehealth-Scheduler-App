@@ -1,0 +1,1 @@
+import{j as a}from"./index-DlZ1Yd61.js";const l=({size:r="small",className:s=""})=>{const e={small:"w-6 h-6",medium:"w-12 h-12",large:"w-16 h-16"};return a.jsx("div",{className:`${s} ${e[r]} animate-spin rounded-full border-4 border-gray-300 border-t-gray-600`})};export{l as S};
