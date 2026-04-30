@@ -1,0 +1,1 @@
+import{ap as t}from"./index-BNiW4Tjp.js";const r="/provider",p={create:e=>t.post(`${r}/create`,[e]),update:e=>t.put(`${r}/${e.providerId}/update`,e.data),delete:e=>t.delete(`${r}/${e}/delete`),viewOneByCode:e=>t.get(`${r}/${e}`),viewAll:()=>t.get(`${r}/all`),search:e=>t.get(`${r}/search?q=${e}`)};export{p};
