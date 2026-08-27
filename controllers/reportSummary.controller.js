@@ -30,15 +30,9 @@ function overlapMs(aStart, aEnd, bStart, bEnd) {
   return Math.max(0, end - start);
 }
 
-// function msToHours(ms, decimals = 2) {
-//   return +(ms / 3600000).toFixed(decimals); // 3,600,000 ms in an hour
-// }
-function msToHours(ms) {
-  if (!ms || ms <= 0) return "00:00";
-  const totalMinutes = Math.floor(ms / 60000); // 1 min = 60000 ms
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+function hoursValue(ms, decimals = 2) {
+  if (!ms || ms <= 0) return 0;
+  return +(ms / 3600000).toFixed(decimals);
 }
 
 function msToHHmm(ms) {
@@ -64,7 +58,7 @@ function getDateRange(dateRange = "thisMonth", customStartDate, customEndDate) {
   const today = dayjs();
   let startDate, endDate;
   
-  console.log(dateRange)
+  
   switch (dateRange) {
     case "today":
       startDate = today.startOf("day").toDate();
@@ -443,31 +437,30 @@ exports.generateProviderSummaryReport = async (req, res) => {
       const utilizationPct = pct(acc.confirmedMs, acc.availableMs);
       const confirmationPct = pct(acc.confirmedMs, acc.totalAppointmentsMs);
 
-      const dateRangeStr = `${dayjs(startDate).format("YYYY-MM-DD")} → ${dayjs(endDate).format("YYYY-MM-DD")}`;
+      const dateRangeStr = `${dayjs(startDate).format("MMM-DD-YYYY")} → ${dayjs(endDate).format("MMM-DD-YYYY")}`;
 
       rows.push({
         "Doctor Name": providerFullName(prov),
-        // "Specialty": prov.specialty || "",
 
-        // Count metrics (as in your original spec)
-        // "Total Appointments": acc.totalAppointments,
-        // "Reserved": acc.reserved,
-        // "Confirmed": acc.confirmed,
-        // "Cancelled": acc.cancelled,
-        // "Missed": acc.missed,
-        // "Available Slots": acc.availableSlots,
+        // Hours metrics (real hour values)
+        "Available Hours": hoursValue(acc.availableMs),
+        "Appointments Hours": hoursValue(acc.totalAppointmentsMs),
+        "Reserved Hours": hoursValue(acc.reservedMs),
+        "Confirmed Hours": hoursValue(acc.confirmedMs),
+        "Cancelled Hours": hoursValue(acc.cancelledMs),
+        "Missed Hours": hoursValue(acc.missedMs),
 
-        // Time metrics (human-readable HH:mm)
-        "Available Time ": msToHHmm(acc.availableMs),
-        "Appointments Time ": msToHHmm(acc.totalAppointmentsMs),
-        "Reserved Time ": msToHHmm(acc.reservedMs),
-        "Confirmed Time ": msToHHmm(acc.confirmedMs),
-        "Cancelled Time ": msToHHmm(acc.cancelledMs),
-        "Missed Time ": msToHHmm(acc.missedMs),
+        // Time display metrics (HH:mm)
+        "Available Time": msToHHmm(acc.availableMs),
+        "Appointments Time": msToHHmm(acc.totalAppointmentsMs),
+        "Reserved Time": msToHHmm(acc.reservedMs),
+        "Confirmed Time": msToHHmm(acc.confirmedMs),
+        "Cancelled Time": msToHHmm(acc.cancelledMs),
+        "Missed Time": msToHHmm(acc.missedMs),
 
         // Percentage metrics (time-based)
-        "Utilization %": utilizationPct,     // confirmed time / available time
-        "Confirmation %": confirmationPct,   // confirmed time / total appointment time
+        "Utilization %": utilizationPct,
+        "Confirmation %": confirmationPct,
 
         "Date Range": dateRangeStr,
       });
@@ -839,7 +832,7 @@ exports.generateStateSummaryReport = async (req, res) => {
     const { startDate, endDate } = getDateRange(dateRange, customStartDate, customEndDate);
 
 
-     const dateRangeStr = `${dayjs(startDate).format("YYYY-MM-DD")} → ${dayjs(endDate).format("YYYY-MM-DD")}`;
+     const dateRangeStr = `${dayjs(startDate).format("MMM-DD-YYYY")} → ${dayjs(endDate).format("MMM-DD-YYYY")}`;
 
     /** -------------------- STATE FILTER -------------------- **/
     const stateWhere = {};
@@ -923,13 +916,13 @@ exports.generateStateSummaryReport = async (req, res) => {
 
       return {
         State: `${st.stateName} (${st.stateCode})`,
-        // "Available Hours": msToHours(acc.availableMs),
-        "Appointments Hours": msToHours(acc.totalAppointmentsMs),
-        "Confirmed Hours": msToHours(acc.confirmedMs),
-        "Cancelled Hours": msToHours(acc.cancelledMs),
-        "Missed Hours": msToHours(acc.missedMs),
+        "Available Hours": hoursValue(acc.availableMs),
+        "Appointments Hours": hoursValue(acc.totalAppointmentsMs),
+        "Reserved Hours": hoursValue(acc.reservedMs),
+        "Confirmed Hours": hoursValue(acc.confirmedMs),
+        "Cancelled Hours": hoursValue(acc.cancelledMs),
+        "Missed Hours": hoursValue(acc.missedMs),
         "Utilization %": `${utilization}%`,
-        "Confirmation %": confirmation,
         "Confirmation %": confirmation,
         "Date Range": dateRangeStr,
       };
@@ -1199,15 +1192,12 @@ const providerData = providers.map((prov) => {
   return {
     name: providerFullName(prov),
     utilization: parseFloat(pct(acc.confirmedMs, acc.availableMs).replace("%", "")),
-    confirmedTime: msToHours(acc.confirmedMs), // Convert ms to hours
-    availableTime: msToHours(acc.availableMs),
+    reservationTime: hoursValue(acc.totalAppointmentsMs),
+    reservedTime: hoursValue(acc.reservedMs),
+    confirmedTime: hoursValue(acc.confirmedMs),
+    availableTime: hoursValue(acc.availableMs),
   };
 });
-
-
-function msToHours(ms) {
-  return (ms / (1000 * 60 * 60)).toFixed(2); // hours with 2 decimal places
-}
 
     // ✅ State Utilization
     const stateAccMap = {}; // { stateId: accumulator }
@@ -1248,8 +1238,10 @@ const stateData = states.map((st) => {
   return {
     name: st.stateName,
     utilization: parseFloat(pct(acc.confirmedMs, acc.availableMs).replace("%", "")),
-    confirmedTime: msToHours(acc.confirmedMs),
-    availableTime: msToHours(acc.availableMs),
+    reservationTime: hoursValue(acc.totalAppointmentsMs),
+    reservedTime: hoursValue(acc.reservedMs),
+    confirmedTime: hoursValue(acc.confirmedMs),
+    availableTime: hoursValue(acc.availableMs),
   };
 });
 
