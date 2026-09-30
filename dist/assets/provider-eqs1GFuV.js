@@ -1,0 +1,1 @@
+import{aq as t}from"./index-gW78sj6Q.js";const r="/provider",d={create:e=>t.post(`${r}/create`,[e]),update:e=>t.put(`${r}/${e.providerId}/update`,e.data),delete:e=>t.delete(`${r}/${e}/delete`),viewOneByCode:e=>t.get(`${r}/${e}`),viewAll:()=>t.get(`${r}/all`),search:e=>t.get(`${r}/search?q=${e}`)};export{d as p};

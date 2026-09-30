@@ -1,15 +1,22 @@
 const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
 const { Op } = require("sequelize");
 const Availability = require("../models/scheduler.model");
 const TelehealthProvider = require("../models/provider.model");
 const Reservation = require("../models/reservation.model");
 const State = require("../models/states.model");
 
+dayjs.extend(utc);
+
+function parseCalendarDate(value) {
+  return dayjs.utc(String(value).slice(0, 10));
+}
+
 function getReportRange({ dateRange = "thisMonth", customStartDate, customEndDate, startDate: requestedStart, endDate: requestedEnd }) {
   if (requestedStart || requestedEnd) {
     if (!requestedStart || !requestedEnd) return null;
-    const start = dayjs(requestedStart).startOf("day");
-    const end = dayjs(requestedEnd).endOf("day");
+    const start = parseCalendarDate(requestedStart).startOf("day");
+    const end = parseCalendarDate(requestedEnd).endOf("day");
     return start.isValid() && end.isValid() && !end.isBefore(start) ? { startDate: start.toDate(), endDate: end.toDate() } : null;
   }
 
@@ -44,8 +51,8 @@ function getReportRange({ dateRange = "thisMonth", customStartDate, customEndDat
       break;
     case "custom":
       if (!customStartDate || !customEndDate) return null;
-      start = dayjs(customStartDate).startOf("day");
-      end = dayjs(customEndDate).endOf("day");
+      start = parseCalendarDate(customStartDate).startOf("day");
+      end = parseCalendarDate(customEndDate).endOf("day");
       break;
     case "thisMonth":
       start = today.startOf("month");
