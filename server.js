@@ -20,6 +20,7 @@ const exportRoute = require('./routes/export.route');
 const scimRoutes = require("./routes/scim.route");
 const apiKeyRoutes = require("./routes/apiKey.routes");
 const settingsRoutes = require("./routes/setting.routes");
+const reservationReportRoutes = require("./routes/reservationReport.routes");
 
 const server = http.createServer(app);
 // Middleware to parse JSON bodies
@@ -55,7 +56,7 @@ app.use('/api/reports', exportRoute);
 app.use("/scim/v2", scimRoutes);
 app.use("/api/keys", apiKeyRoutes);
 app.use("/api/settings", settingsRoutes);
-
+app.use("/api/reservation-reports", reservationReportRoutes);
 
 
 // React build folder ka path 
