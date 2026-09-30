@@ -363,7 +363,11 @@ exports.getDoctorReservationsByState = async (req, res) => {
       providerCounts.reservedSlots += 1;
     }
 
-    const tableStates = states;
+    const tableStates = [...states].sort((firstState, secondState) => {
+      if (firstState.stateCode === "BL") return 1;
+      if (secondState.stateCode === "BL") return -1;
+      return 0;
+    });
     const columns = [
       { key: "doctor", label: "Doctor/State" },
       ...tableStates.flatMap((state) => [
