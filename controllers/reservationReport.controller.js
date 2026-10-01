@@ -101,7 +101,7 @@ exports.getReservationCapacitySummary = async (req, res) => {
         required: false,
         attributes: ["id", "start", "end", "status"],
         where: {
-          status: "reserved",
+          // status: "reserved",
           start: { [Op.lte]: endDate },
           end: { [Op.gte]: startDate },
         },
@@ -176,7 +176,7 @@ exports.getProviderReservationChartData = async (req, res) => {
         required: false,
         attributes: ["id", "start", "end", "status"],
         where: {
-          status: "reserved",
+          // status: "reserved",
           start: { [Op.lte]: endDate },
           end: { [Op.gte]: startDate },
         },
@@ -249,7 +249,7 @@ exports.getStateReservationChartData = async (req, res) => {
     const { providerId, stateId } = req.body || {};
     const stateWhere = stateId && stateId !== "all" ? { id: stateId } : {};
     const reservationWhere = {
-      status: "reserved",
+      // status: "reserved",
       start: { [Op.lte]: endDate },
       end: { [Op.gte]: startDate },
     };
@@ -319,7 +319,7 @@ exports.getDoctorReservationsByState = async (req, res) => {
     const providerWhere = providerId && providerId !== "all" ? { id: providerId } : {};
     const stateWhere = stateId && stateId !== "all" ? { id: stateId } : {};
     const reservationWhere = {
-      status: "reserved",
+      // status: "reserved",
       start: { [Op.lte]: endDate },
       end: { [Op.gte]: startDate },
     };
